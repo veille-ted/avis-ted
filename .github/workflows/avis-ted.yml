@@ -1,0 +1,27 @@
+name: Avis TED
+
+on:
+  schedule:
+    - cron: '0 4 * * 1-5' # chaque jour ouvré, vers 5 h ou 6 h en France
+  workflow_dispatch: {} # bouton « Run workflow » pour lancer à la main
+
+permissions:
+  contents: write # écrire avis.json dans ce dépôt, rien d'autre
+
+jobs:
+  recuperer:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: node recuperer-avis.js
+      - name: Publier avis.json
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add avis.json
+          git diff --cached --quiet || git commit -m "Avis TED du $(date +%F)"
+          git push
